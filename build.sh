@@ -2,6 +2,11 @@
 
 set -eu
 
+if ! command -v docker >/dev/null 2>&1; then
+  echo "Error: docker is not installed or not in PATH" >&2
+  exit 1
+fi
+
 if ! git rev-parse --git-dir >/dev/null 2>&1; then
   echo "Error: not a git repository" >&2
   exit 1
