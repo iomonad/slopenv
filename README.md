@@ -19,6 +19,11 @@ Run an agent in a sandboxed environment:
 - `-a agent` - Agent type to use (default: `opencode`). Supported: `opencode`, `claude-code`
 - `[directory]` - Working directory to mount (default: current directory)
 
+## Agents & Free Tier
+
+- `opencode` (default): Provider-agnostic. You can use local models (e.g., [Ollama](https://ollama.com/)) or free models from providers like [OpenRouter](https://www.openrouter.ai/) without a paid Anthropic subscription. Some providers may require API keys or have rate limits. Authentication and provider configuration are handled inside OpenCode within the container.
+- `claude-code`: Requires authentication with Anthropic (Pro, Max, Enterprise, or API credits). There is currently no widely available free tier for Claude Code usage.
+
 ## Build
 
 You can build all images with the provided script:

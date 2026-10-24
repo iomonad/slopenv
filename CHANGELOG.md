@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - `bin/slopenv` (now documents `claude-code` as supported via usage)
 - `build.sh` (builds `claude-code` agent)
-- `README.md` (documents `claude-code` agent usage and build)
+- `README.md` (documents `claude-code` agent usage, build, and free tier information)
 
 ## 19433c3 - feat[bin]: added slopenv binary
 ### Added
