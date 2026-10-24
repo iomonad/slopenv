@@ -57,6 +57,7 @@ image="ghcr.io/iomonad/slopenv/agent/${agent}:latest"
 # Derive a readable, unique container name, e.g. slopenv-opencode-slopenv-12345
 project="$(basename "$workdir" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_.-]/-/g')"
 container_name="slopenv-${agent}-${project:-root}-$$"
+target_dir="/workspace/$project"
 
 persist_dir=""
 if [ "$use_persistence" -eq 1 ]; then
@@ -68,7 +69,7 @@ fi
 docker_args=(
   --rm -it
   --name "$container_name"
-  -v "$workdir:/workspace/$workdir"
+  -v "$workdir:$target_dir"
   -w /workspace
   --user "$(id -u):$(id -g)"
   -e HOME=/workspace
@@ -83,15 +84,15 @@ fi
 if [ -n "$persist_dir" ]; then
   case "$agent" in
     claude-code)
-      exec docker run "${docker_args[@]}" --entrypoint /bin/sh "$image" -c "mkdir -p /workspace/.agent-persist && ln -snf /workspace/.agent-persist /workspace/.claude && exec /sbin/tini -- claude /workspace/$workdir"
+      exec docker run "${docker_args[@]}" --entrypoint /bin/sh "$image" -c "mkdir -p /workspace/.agent-persist && ln -snf /workspace/.agent-persist /workspace/.claude && exec /sbin/tini -- claude $target_dir"
       ;;
     opencode)
-      exec docker run "${docker_args[@]}" --entrypoint /bin/sh "$image" -c "mkdir -p /workspace/.agent-persist && mkdir -p /workspace/.config /workspace/.local/share /workspace/.local/state /workspace/.cache && ln -snf /workspace/.agent-persist /workspace/.config/opencode && ln -snf /workspace/.agent-persist /workspace/.local/share/opencode && ln -snf /workspace/.agent-persist /workspace/.local/state/opencode && ln -snf /workspace/.agent-persist /workspace/.opencode && exec /sbin/tini -- opencode -c /workspace/$workdir"
+      exec docker run "${docker_args[@]}" --entrypoint /bin/sh "$image" -c "mkdir -p /workspace/.agent-persist && mkdir -p /workspace/.config /workspace/.local/share /workspace/.local/state /workspace/.cache && ln -snf /workspace/.agent-persist /workspace/.config/opencode && ln -snf /workspace/.agent-persist /workspace/.local/share/opencode && ln -snf /workspace/.agent-persist /workspace/.local/state/opencode && ln -snf /workspace/.agent-persist /workspace/.opencode && exec /sbin/tini -- opencode -c $target_dir"
       ;;
     *)
-      exec docker run "${docker_args[@]}" --entrypoint /bin/sh "$image" -c "mkdir -p /workspace/.agent-persist && mkdir -p /workspace/.config && ln -snf /workspace/.agent-persist /workspace/.$agent && ln -snf /workspace/.agent-persist /workspace/.config/$agent && exec /sbin/tini -- $agent /workspace/$workdir"
+      exec docker run "${docker_args[@]}" --entrypoint /bin/sh "$image" -c "mkdir -p /workspace/.agent-persist && mkdir -p /workspace/.config && ln -snf /workspace/.agent-persist /workspace/.$agent && ln -snf /workspace/.agent-persist /workspace/.config/$agent && exec /sbin/tini -- $agent $target_dir"
       ;;
   esac
 else
-  exec docker run "${docker_args[@]}" "$image" /workspace/$workdir
+  exec docker run "${docker_args[@]}" "$image" $target_dir
 fi

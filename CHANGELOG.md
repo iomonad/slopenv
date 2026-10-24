@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 - `bin/slopenv` (added persistence support with `-x` to disable, updated usage; now documents `claude-code` as supported via usage)
 - `bin/slopenv` (opencode now resumes last session via `-c` to avoid creating a new session)
 - `bin/slopenv` (exit with list of available agents on unknown `-a` value)
+- `bin/slopenv` (mount only project basename under /workspace for privacy)
 - `build.sh` (builds `claude-code` agent, exits if docker is not installed)
 - `README.md` (updated agent usage to reference Available Agents section, documents `claude-code` agent usage, build, and free tier information, added persistence section)
 - `AGENTS.md` (clarified commit convention format and added guidance to specify scope when possible)
