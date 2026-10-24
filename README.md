@@ -2,6 +2,8 @@
 
 Personal sandboxed environment for domain-specific tasks
 
+> See also: [jwz on AI](https://www.jwz.org/blog/tag/ai/)
+
 ## Rationale
 
 Most existing sandboxing solutions for AI agents are either bloated, overly complex, or closed-source.
