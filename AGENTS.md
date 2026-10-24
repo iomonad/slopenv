@@ -6,10 +6,10 @@ This document provides context for coding agents working in this repository.
 slopenv is a minimal, suckless sandbox for running AI agents. It uses a small shell script + Docker to mount a working directory and run an agent in a containerized, reproducible environment.
 
 ## Architecture
-- Entry: `bin/slopenv [-a agent] [directory]` (defaults: agent=`opencode`, directory=`$PWD`). Resolves absolute path, validates directory, runs `docker run` mounting to `/workspace/$workdir`, sets user/uid:gid, env vars (`HOME=/workspace`, `TERM`, `LANG`), and executes the agent image with the target path.
+- Entry: `bin/slopenv [-a agent] [directory]` (defaults: agent=`opencode`, directory=`$PWD`). Resolves absolute path, validates directory. Runs `docker run --rm -it` with `-v "$workdir:/workspace/$workdir"`, `-w /workspace`, `--user "$(id -u):$(id -g)"`, env `HOME=/workspace`, `TERM` (default `xterm-256color`), `LANG` (default `C.UTF-8`). Executes image `ghcr.io/iomonad/slopenv/agent/${agent}:latest` with arg `/workspace/$workdir`.
 - Images:
-  - Base: `base/Dockerfile` builds `ghcr.io/iomonad/slopenv/core:latest` (Alpine 3.24.3, packages: tini, libstdc++ libgcc, ripgrep, bash, curl, jq, git; creates user `marvin`, workdir `/workspace`).
-  - Agents: `agents/<agent>/Dockerfile` FROM core, install/setup agent, set ENTRYPOINT/CMD. Current: `opencode` installs via `https://opencode.ai/v2/install`, adds `/workspace/.opencode/bin` to PATH, entrypoint `["/sbin/tini","--","opencode"]`, cmd `["/workspace"]`.
+  - Base: `base/Dockerfile` builds `ghcr.io/iomonad/slopenv/core:latest` (FROM `alpine:3.24.3` pinned by digest). Installs `tini`, `libstdc++`, `libgcc`, `ripgrep`, `bash`, `curl`, `jq`, `git`. Creates user `marvin` (`adduser -D -h /workspace -s /bin/bash marvin`), sets `USER marvin`, `WORKDIR /workspace`. Sets `ENV LANG=C.UTF-8 TERM=xterm-256color` and `HOME=/workspace` (on separate line).
+  - Agents: `agents/<agent>/Dockerfile` FROM core. Current `opencode`: installs via `curl -fsSL https://opencode.ai/v2/install | bash`, sets `ENV PATH="$PATH:/workspace/.opencode/bin"`, `ENTRYPOINT ["/sbin/tini", "--", "opencode"]`, `CMD ["/workspace"]`.
 - Build: `build.sh` builds core then opencode agent.
 
 ## Key files
