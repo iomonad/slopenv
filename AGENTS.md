@@ -29,3 +29,4 @@ slopenv is a minimal, suckless sandbox for running AI agents. It uses a small sh
 - The launcher passes `-w /workspace` and mounts as `-v "$workdir:/workspace/$workdir"`, then runs with `/workspace/$workdir` as positional arg to the container (agent sees the project dir). User is mapped to host uid/gid.
 - Base sets `HOME=/workspace` for the non-root user.
 - Opencode install is pulled from the official installer (curl | bash).
+- The agent should never commit and push code.
