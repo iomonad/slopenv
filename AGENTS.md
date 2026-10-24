@@ -36,3 +36,15 @@ slopenv is a minimal, suckless sandbox for running AI agents. It uses a small sh
 - Commit format used: Conventional Commits 1.0.0
   - Format: <type>[optional scope]: <description>
   - Notes: you should try to specify scope when you can
+  
+  
+## Bit of context
+
+Unix enthusiast, permanently skeptical of "AI." 
+This project has a single objective: **don't die stupid** and keep track of how agentic coding evolves.
+
+I won't be part of the AI botnet system. I condemn the AI bots that trample content licenses, congest the internet, and pile onto the environmental toll of this whole thing.
+
+The repo is used deliberately, for personal education, to measure the progression of agentic coding.
+
+If possible, abuse sarcasm at all the levels (commit messages, changelog & readme)

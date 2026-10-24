@@ -24,13 +24,6 @@ Run an agent in a sandboxed environment:
 
 By default, slopenv persists agent configuration in the current user's home directory under `~/.slopenv/agents/<agent-name>/`. This directory is mounted into the container and symlinked to the agent's expected configuration locations, so authentication and settings persist across runs. Use `-x` to run without persistence.
 
-## Available Agents
-
-| Agent | Image | Install Method | Free Tier | Notes |
-| --- | --- | --- | --- | --- |
-| `opencode` (default) | `ghcr.io/iomonad/slopenv/agent/opencode:latest` | [Official installer](https://opencode.ai/v2/install) (`curl \| bash`) | Yes | Provider-agnostic. Use local models (e.g., [Ollama](https://ollama.com/)) or free models via providers like [OpenRouter](https://www.openrouter.ai/). Auth/provider config handled inside OpenCode in the container. |
-| `claude-code` | `ghcr.io/iomonad/slopenv/agent/claude-code:latest` | [Official installer](https://claude.ai/install.sh) (`curl \| bash`) | No | Requires authentication with Anthropic (Pro, Max, Enterprise, or API credits). No widely available free tier. |
-
 ## Agents & Free Tier
 
 - `opencode` (default): Provider-agnostic. You can use local models (e.g., [Ollama](https://ollama.com/)) or free models from providers like [OpenRouter](https://www.openrouter.ai/) without a paid Anthropic subscription. Some providers may require API keys or have rate limits. Authentication and provider configuration are handled inside OpenCode within the container.
@@ -56,6 +49,14 @@ docker build -t ghcr.io/iomonad/slopenv/agent/opencode:latest agents/opencode
 # Build Claude Code agent image
 docker build -t ghcr.io/iomonad/slopenv/agent/claude-code:latest agents/claude-code
 ```
+
+## Dogfooding
+
+Oh, the irony isn't lost on us.
+
+This very project **slopenv** was built and maintained using `slopenv` itself. Yes, we willingly locked an agent inside a Docker container running the script we just wrote to edit the script we just wrote. Peak meta.
+
+If nothing else, at least we can say we trust our own minimalism enough to eat our own dogfood. Whether that's brave or foolish is left as an exercise to the reader.
 
 ## License
 
