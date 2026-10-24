@@ -69,7 +69,7 @@ if [ -n "$persist_dir" ]; then
       exec docker run "${docker_args[@]}" --entrypoint /bin/sh "$image" -c "mkdir -p /workspace/.agent-persist && ln -snf /workspace/.agent-persist /workspace/.claude && exec /sbin/tini -- claude /workspace/$workdir"
       ;;
     opencode)
-      exec docker run "${docker_args[@]}" --entrypoint /bin/sh "$image" -c "mkdir -p /workspace/.agent-persist && mkdir -p /workspace/.config /workspace/.local/share /workspace/.local/state /workspace/.cache && ln -snf /workspace/.agent-persist /workspace/.config/opencode && ln -snf /workspace/.agent-persist /workspace/.local/share/opencode && ln -snf /workspace/.agent-persist /workspace/.local/state/opencode && ln -snf /workspace/.agent-persist /workspace/.opencode && exec /sbin/tini -- opencode /workspace/$workdir"
+      exec docker run "${docker_args[@]}" --entrypoint /bin/sh "$image" -c "mkdir -p /workspace/.agent-persist && mkdir -p /workspace/.config /workspace/.local/share /workspace/.local/state /workspace/.cache && ln -snf /workspace/.agent-persist /workspace/.config/opencode && ln -snf /workspace/.agent-persist /workspace/.local/share/opencode && ln -snf /workspace/.agent-persist /workspace/.local/state/opencode && ln -snf /workspace/.agent-persist /workspace/.opencode && exec /sbin/tini -- opencode -c /workspace/$workdir"
       ;;
     *)
       exec docker run "${docker_args[@]}" --entrypoint /bin/sh "$image" -c "mkdir -p /workspace/.agent-persist && mkdir -p /workspace/.config && ln -snf /workspace/.agent-persist /workspace/.$agent && ln -snf /workspace/.agent-persist /workspace/.config/$agent && exec /sbin/tini -- $agent /workspace/$workdir"
