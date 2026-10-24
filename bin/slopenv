@@ -2,20 +2,11 @@
 
 agent="opencode"
 use_persistence=1
+AVAILABLE_AGENTS="opencode claude-code"
 
 usage() {
   echo "Usage: $(basename "$0") [-a agent] [-x] [directory]" >&2
   exit 1
-}
-
-list_available_agents() {
-  if [ -d "$(dirname "$0")/../agents" ]; then
-    ls -1 "$(dirname "$0")/../agents" 2>/dev/null | tr '\n' ' '
-  elif [ -d "./agents" ]; then
-    ls -1 ./agents 2>/dev/null | tr '\n' ' '
-  else
-    echo "opencode claude-code"
-  fi
 }
 
 while getopts "a:xh" opt; do
@@ -46,9 +37,18 @@ fi
 workdir="$(cd "$workdir" && pwd)"
 
 # Validate agent
-if [ ! -d "$(dirname "$0")/../agents/$agent" ] && [ ! -d "./agents/$agent" ]; then
+valid_agent=0
+for a in $AVAILABLE_AGENTS; do
+  [ "$a" = "$agent" ] && valid_agent=1 && break
+done
+if [ "$valid_agent" -ne 1 ]; then
   echo "Error: unknown agent '$agent'" >&2
-  echo "Available agents: $(list_available_agents)" >&2
+  echo "Available agents: $AVAILABLE_AGENTS" >&2
+  exit 1
+fi
+if [ ! -d "$(dirname "$0")/../agents/$agent" ] && [ ! -d "./agents/$agent" ]; then
+  echo "Error: agent image '$agent' not found locally" >&2
+  echo "Available agents: $AVAILABLE_AGENTS" >&2
   exit 1
 fi
 
