@@ -5,17 +5,21 @@ use_persistence=1
 AVAILABLE_AGENTS="opencode claude-code"
 
 usage() {
-  echo "Usage: $(basename "$0") [-a agent] [-x] [directory]" >&2
+  echo "Usage: $(basename "$0") [-a agent] [-x] [-l] [directory]" >&2
   exit 1
 }
 
-while getopts "a:xh" opt; do
+while getopts "a:xlh" opt; do
   case "$opt" in
     a)
       agent="$OPTARG"
       ;;
     x)
       use_persistence=0
+      ;;
+    l)
+      echo "$AVAILABLE_AGENTS"
+      exit 0
       ;;
     h)
       usage
