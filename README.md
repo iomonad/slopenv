@@ -2,6 +2,12 @@
 
 Personal sandboxed environment for domain-specific tasks
 
+## Rationale
+
+Most existing sandboxing solutions for AI agents are either bloated, overly complex, or closed-source.
+
+`slopenv` takes a minimal, suckless, and non-intrusive approach to safely experimenting with AI agents. By combining a simple shell script with Docker, it provides a lightweight, reproducible workflow that just works out of the box.
+
 ## Usage
 
 Run an agent in a sandboxed environment:
