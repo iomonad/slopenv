@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - `README.md` (added Available Agents table with opencode and claude-code details)
 
 ### Changed
+- `bin/slopenv` (containers are now named `slopenv-<agent>-<project>-<pid>`, added `--name`)
 - `bin/slopenv` (added persistence support with `-x` to disable, updated usage; now documents `claude-code` as supported via usage)
 - `build.sh` (builds `claude-code` agent, exits if docker is not installed)
 - `README.md` (updated agent usage to reference Available Agents section, documents `claude-code` agent usage, build, and free tier information, added persistence section)

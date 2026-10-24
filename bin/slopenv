@@ -37,6 +37,10 @@ workdir="$(cd "$workdir" && pwd)"
 
 image="ghcr.io/iomonad/slopenv/agent/${agent}:latest"
 
+# Derive a readable, unique container name, e.g. slopenv-opencode-slopenv-12345
+project="$(basename "$workdir" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_.-]/-/g')"
+container_name="slopenv-${agent}-${project:-root}-$$"
+
 persist_dir=""
 if [ "$use_persistence" -eq 1 ]; then
   persist_base="${HOME}/.slopenv"
@@ -46,6 +50,7 @@ fi
 
 docker_args=(
   --rm -it
+  --name "$container_name"
   -v "$workdir:/workspace/$workdir"
   -w /workspace
   --user "$(id -u):$(id -g)"
