@@ -2,6 +2,17 @@
 
 Personal sandboxed environment for domain-specific tasks
 
+## Usage
+
+Run an agent in a sandboxed environment:
+
+```bash
+./bin/slopenv [-a agent] [directory]
+```
+
+- `-a agent` - Agent type to use (default: `opencode`)
+- `[directory]` - Working directory to mount (default: current directory)
+
 ## Build
 
 You can build all images with the provided script:

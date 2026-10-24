@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+agent="opencode"
+
+usage() {
+  echo "Usage: $(basename "$0") [-a agent] [directory]" >&2
+  exit 1
+}
+
+while getopts "a:h" opt; do
+  case "$opt" in
+    a)
+      agent="$OPTARG"
+      ;;
+    h)
+      usage
+      ;;
+    *)
+      usage
+      ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+workdir="${1:-$(pwd)}"
+
+# Resolve to absolute path
+if [ ! -d "$workdir" ]; then
+  echo "Error: directory '$workdir' does not exist" >&2
+  exit 1
+fi
+workdir="$(cd "$workdir" && pwd)"
+
+image="ghcr.io/iomonad/slopenv/agent/${agent}:latest"
+
+exec docker run --rm -it \
+  -v "$workdir:/workspace" \
+  -w /workspace \
+  --user "$(id -u):$(id -g)" \
+  -e HOME=/workspace \
+  -e TERM="${TERM:-xterm-256color}" \
+  -e LANG="${LANG:-C.UTF-8}" \
+  "$image" /workspace
