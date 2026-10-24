@@ -8,12 +8,24 @@ Most existing sandboxing solutions for AI agents are either bloated, overly comp
 
 `slopenv` takes a minimal, suckless, and non-intrusive approach to safely experimenting with AI agents. By combining a simple shell script with Docker, it provides a lightweight, reproducible workflow that just works out of the box.
 
+## Installation
+
+Install `slopenv` to your user bin path (defaults to `~/.local/bin`):
+
+```bash
+./install.sh
+# or: ./install.sh ~/.local/bin
+```
+
+If the install directory isn't in your `PATH`, add it to your shell rc as suggested.
+
 ## Usage
 
 Run an agent in a sandboxed environment:
 
 ```bash
-./bin/slopenv [-a agent] [-x] [directory]
+slopenv [-a agent] [-x] [directory]
+# or from repo: ./bin/slopenv [-a agent] [-x] [directory]
 ```
 
 - `-a agent` - Agent type to use (default: `opencode`). See [Available Agents](#available-agents).

@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - `agents/claude-code/Dockerfile` (Claude Code agent image)
 - Support for `claude-code` agent via `-a claude-code`
 - `README.md` (added Available Agents table with opencode and claude-code details)
+- `install.sh` to install `slopenv` to user bin path with PATH hint
 
 ### Changed
 - `bin/slopenv` (containers are now named `slopenv-<agent>-<project>-<pid>`, added `--name`)
