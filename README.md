@@ -13,11 +13,16 @@ Most existing sandboxing solutions for AI agents are either bloated, overly comp
 Run an agent in a sandboxed environment:
 
 ```bash
-./bin/slopenv [-a agent] [directory]
+./bin/slopenv [-a agent] [-x] [directory]
 ```
 
 - `-a agent` - Agent type to use (default: `opencode`). See [Available Agents](#available-agents).
+- `-x` - Disable persistence (by default, agent configuration is persisted)
 - `[directory]` - Working directory to mount (default: current directory)
+
+### Persistence
+
+By default, slopenv persists agent configuration in the current user's home directory under `~/.slopenv/agents/<agent-name>/`. This directory is mounted into the container and symlinked to the agent's expected configuration locations, so authentication and settings persist across runs. Use `-x` to run without persistence.
 
 ## Available Agents
 

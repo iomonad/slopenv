@@ -5,14 +5,16 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Agent configuration persistence in `~/.slopenv/agents/<agent-name>/` mounted by default for all agents
+- `-x` option to disable persistence in `bin/slopenv`
 - `agents/claude-code/Dockerfile` (Claude Code agent image)
 - Support for `claude-code` agent via `-a claude-code`
 - `README.md` (added Available Agents table with opencode and claude-code details)
 
 ### Changed
-- `bin/slopenv` (now documents `claude-code` as supported via usage)
+- `bin/slopenv` (added persistence support with `-x` to disable, updated usage; now documents `claude-code` as supported via usage)
 - `build.sh` (builds `claude-code` agent, exits if docker is not installed)
-- `README.md` (updated agent usage to reference Available Agents section, documents `claude-code` agent usage, build, and free tier information)
+- `README.md` (updated agent usage to reference Available Agents section, documents `claude-code` agent usage, build, and free tier information, added persistence section)
 - `AGENTS.md` (clarified commit convention format and added guidance to specify scope when possible)
 
 ## 19433c3 - feat[bin]: added slopenv binary
