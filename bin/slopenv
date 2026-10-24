@@ -50,11 +50,6 @@ if [ "$valid_agent" -ne 1 ]; then
   echo "Available agents: $AVAILABLE_AGENTS" >&2
   exit 1
 fi
-if [ ! -d "$(dirname "$0")/../agents/$agent" ] && [ ! -d "./agents/$agent" ]; then
-  echo "Error: agent image '$agent' not found locally" >&2
-  echo "Available agents: $AVAILABLE_AGENTS" >&2
-  exit 1
-fi
 
 image="ghcr.io/iomonad/slopenv/agent/${agent}:latest"
 
