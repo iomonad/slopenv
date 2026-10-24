@@ -34,10 +34,10 @@ workdir="$(cd "$workdir" && pwd)"
 image="ghcr.io/iomonad/slopenv/agent/${agent}:latest"
 
 exec docker run --rm -it \
-  -v "$workdir:/workspace" \
+  -v "$workdir:/workspace/$workdir" \
   -w /workspace \
   --user "$(id -u):$(id -g)" \
   -e HOME=/workspace \
   -e TERM="${TERM:-xterm-256color}" \
   -e LANG="${LANG:-C.UTF-8}" \
-  "$image" /workspace
+  "$image" /workspace/$workdir
