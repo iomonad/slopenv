@@ -34,4 +34,5 @@ slopenv is a minimal, suckless sandbox for running AI agents. It uses a small sh
 - The agent should never push code but can commit under the email iomonad@riseup.net and the username iomonad
 - For each non planning commit and update CHANGELOG.md
 - Commit format used: Conventional Commits 1.0.0
-  - <type>[optional scope]: <description>
+  - Format: <type>[optional scope]: <description>
+  - Notes: you should try to specify scope when you can
