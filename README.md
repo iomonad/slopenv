@@ -16,7 +16,7 @@ Run an agent in a sandboxed environment:
 ./bin/slopenv [-a agent] [directory]
 ```
 
-- `-a agent` - Agent type to use (default: `opencode`)
+- `-a agent` - Agent type to use (default: `opencode`). Supported: `opencode`, `claude-code`
 - `[directory]` - Working directory to mount (default: current directory)
 
 ## Build
@@ -35,6 +35,9 @@ docker build -t ghcr.io/iomonad/slopenv/core:latest base
 
 # Build OpenCode agent image
 docker build -t ghcr.io/iomonad/slopenv/agent/opencode:latest agents/opencode
+
+# Build Claude Code agent image
+docker build -t ghcr.io/iomonad/slopenv/agent/claude-code:latest agents/claude-code
 ```
 
 ## License

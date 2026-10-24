@@ -14,5 +14,5 @@ USER marvin
 WORKDIR /workspace
 
 ENV LANG=C.UTF-8 \
-    TERM=xterm-256color
+    TERM=xterm-256color \
     HOME=/workspace
