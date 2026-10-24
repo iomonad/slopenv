@@ -8,6 +8,16 @@ usage() {
   exit 1
 }
 
+list_available_agents() {
+  if [ -d "$(dirname "$0")/../agents" ]; then
+    ls -1 "$(dirname "$0")/../agents" 2>/dev/null | tr '\n' ' '
+  elif [ -d "./agents" ]; then
+    ls -1 ./agents 2>/dev/null | tr '\n' ' '
+  else
+    echo "opencode claude-code"
+  fi
+}
+
 while getopts "a:xh" opt; do
   case "$opt" in
     a)
@@ -34,6 +44,13 @@ if [ ! -d "$workdir" ]; then
   exit 1
 fi
 workdir="$(cd "$workdir" && pwd)"
+
+# Validate agent
+if [ ! -d "$(dirname "$0")/../agents/$agent" ] && [ ! -d "./agents/$agent" ]; then
+  echo "Error: unknown agent '$agent'" >&2
+  echo "Available agents: $(list_available_agents)" >&2
+  exit 1
+fi
 
 image="ghcr.io/iomonad/slopenv/agent/${agent}:latest"
 
