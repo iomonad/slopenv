@@ -7,7 +7,8 @@ RUN apk add --no-cache \
     bash \
     curl \
     jq \
-    git
+    git \
+    github-cli
 
 RUN adduser -D -h /workspace -s /bin/bash marvin
 USER marvin
