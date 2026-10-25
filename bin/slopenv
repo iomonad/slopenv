@@ -36,15 +36,29 @@ ensure_docker() {
   fi
 
   if [ -d /run/systemd/system ] && command -v systemctl >/dev/null 2>&1; then
-    echo "docker daemon is not running, starting it with systemd" >&2
-    $asroot systemctl start docker || exit 1
+    start_cmd="systemctl start docker"
   elif command -v rc-service >/dev/null 2>&1; then
-    echo "docker daemon is not running, starting it with openrc" >&2
-    $asroot rc-service docker start || exit 1
+    start_cmd="rc-service docker start"
   else
     echo "Error: docker daemon is not running and no systemd or openrc found to start it" >&2
     exit 1
   fi
+
+  # Never escalate privileges behind the user's back
+  if [ ! -t 0 ]; then
+    echo "Error: docker daemon is not running (start it with: $asroot${asroot:+ }$start_cmd)" >&2
+    exit 1
+  fi
+  printf 'docker daemon is not running. Start it with "%s"? [Y/n] ' "$asroot${asroot:+ }$start_cmd" >&2
+  read -r answer
+  case "$answer" in
+    ""|[yY]|[yY][eE][sS]) ;;
+    *)
+      echo "Aborted: docker daemon left alone" >&2
+      exit 1
+      ;;
+  esac
+  $asroot $start_cmd || exit 1
 
   # The service returning does not mean the socket is ready yet
   for _ in 1 2 3 4 5 6 7 8 9 10; do
