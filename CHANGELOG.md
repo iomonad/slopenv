@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 - `README.md` (dropped the jwz link and the Dogfooding section)
 
 ### Added
+- `-L` option in `bin/slopenv` to list active sessions (container name and uptime)
 - Agent configuration persistence in `~/.slopenv/agents/<agent-name>/` mounted by default for all agents
 - `-x` option to disable persistence in `bin/slopenv`
 - `agents/claude-code/Dockerfile` (Claude Code agent image)

@@ -24,12 +24,14 @@ If the install directory isn't in your `PATH`, add it to your shell rc as sugges
 Run an agent in a sandboxed environment:
 
 ```bash
-slopenv [-a agent] [-x] [directory]
-# or from repo: ./bin/slopenv [-a agent] [-x] [directory]
+slopenv [-a agent] [-x] [-l] [-L] [directory]
+# or from repo: ./bin/slopenv [-a agent] [-x] [-l] [-L] [directory]
 ```
 
 - `-a agent` - Agent type to use (default: `opencode`). See [Available Agents](#available-agents).
 - `-x` - Disable persistence (by default, agent configuration is persisted)
+- `-l` - List available agents
+- `-L` - List active sessions with their uptime
 - `[directory]` - Working directory to mount (default: current directory)
 
 ### Persistence

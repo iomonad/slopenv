@@ -5,11 +5,23 @@ use_persistence=1
 AVAILABLE_AGENTS="opencode claude-code"
 
 usage() {
-  echo "Usage: $(basename "$0") [-a agent] [-x] [-l] [directory]" >&2
+  echo "Usage: $(basename "$0") [-a agent] [-x] [-l] [-L] [directory]" >&2
   exit 1
 }
 
-while getopts "a:xlh" opt; do
+list_sessions() {
+  sessions="$(docker ps --filter "name=slopenv-" --format '{{.Names}}\t{{.Status}}' | grep '^slopenv-')"
+  if [ -z "$sessions" ]; then
+    echo "No active sessions"
+    return
+  fi
+  printf '%-40s %s\n' NAME UPTIME
+  printf '%s\n' "$sessions" | while IFS="$(printf '\t')" read -r name status; do
+    printf '%-40s %s\n' "$name" "${status#Up }"
+  done
+}
+
+while getopts "a:xlLh" opt; do
   case "$opt" in
     a)
       agent="$OPTARG"
@@ -19,6 +31,10 @@ while getopts "a:xlh" opt; do
       ;;
     l)
       echo "$AVAILABLE_AGENTS"
+      exit 0
+      ;;
+    L)
+      list_sessions
       exit 0
       ;;
     h)
