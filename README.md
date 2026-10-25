@@ -34,7 +34,7 @@ slopenv [-a agent] [-x] [-l] [-L] [directory]
 - `-L` - List active sessions with their uptime
 - `[directory]` - Working directory to mount (default: current directory)
 
-If the docker daemon is not running, `slopenv` starts it for you through `systemctl` (systemd) or `rc-service` (openrc), using `sudo` or `doas` when not root. Because apparently remembering to start a daemon is now also a task worth automating.
+If the docker daemon is not running, `slopenv` asks whether to start it through `systemctl` (systemd) or `rc-service` (openrc), using `sudo` or `doas` when not root. Answering anything but yes aborts, and so does running without a terminal. Because apparently remembering to start a daemon is now also a task worth automating, but not one worth automating *without asking*.
 
 ### Persistence
 
