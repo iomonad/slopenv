@@ -2,8 +2,6 @@
 
 Personal sandboxed environment for domain-specific tasks
 
-> See also: [jwz on AI](https://www.jwz.org/blog/tag/ai/)
-
 ## Rationale
 
 Most existing sandboxing solutions for AI agents are either bloated, overly complex, or closed-source.
@@ -63,14 +61,6 @@ docker build -t ghcr.io/iomonad/slopenv/agent/opencode:latest agents/opencode
 # Build Claude Code agent image
 docker build -t ghcr.io/iomonad/slopenv/agent/claude-code:latest agents/claude-code
 ```
-
-## Dogfooding
-
-Oh, the irony isn't lost on us.
-
-This very project **slopenv** was built and maintained using `slopenv` itself. Yes, we willingly locked an agent inside a Docker container running the script we just wrote to edit the script we just wrote. Peak meta.
-
-If nothing else, at least we can say we trust our own minimalism enough to eat our own dogfood. Whether that's brave or foolish is left as an exercise to the reader.
 
 ## License
 

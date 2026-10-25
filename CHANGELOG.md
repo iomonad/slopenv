@@ -10,8 +10,10 @@ All notable changes to this project will be documented in this file.
 - `bin/slopenv` (generic agents no longer nest links inside directories baked into their image)
 - `AGENTS.md` (mount path, flags and persistence description caught up with reality)
 
+### Removed
+- `README.md` (dropped the jwz link and the Dogfooding section)
+
 ### Added
-- `README.md` (added delightfully sarcastic "Dogfooding" section — yes, we willingly cage ourselves to build the cage)
 - Agent configuration persistence in `~/.slopenv/agents/<agent-name>/` mounted by default for all agents
 - `-x` option to disable persistence in `bin/slopenv`
 - `agents/claude-code/Dockerfile` (Claude Code agent image)
@@ -31,7 +33,6 @@ All notable changes to this project will be documented in this file.
 
 ## 19433c3 - feat[bin]: added slopenv binary
 ### Added
-- `README.md` (added delightfully sarcastic "Dogfooding" section — yes, we willingly cage ourselves to build the cage)
 - `bin/slopenv` (new executable/entrypoint script for the `slopenv` binary)
 
 ### Changed
@@ -50,5 +51,4 @@ All notable changes to this project will be documented in this file.
 
 ## 88051b1 - Initial commit
 ### Added
-- `README.md` (added delightfully sarcastic "Dogfooding" section — yes, we willingly cage ourselves to build the cage)
 - `README.md`
