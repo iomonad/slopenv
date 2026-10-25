@@ -34,6 +34,8 @@ slopenv [-a agent] [-x] [-l] [-L] [directory]
 - `-L` - List active sessions with their uptime
 - `[directory]` - Working directory to mount (default: current directory)
 
+If the docker daemon is not running, `slopenv` starts it for you through `systemctl` (systemd) or `rc-service` (openrc), using `sudo` or `doas` when not root. Because apparently remembering to start a daemon is now also a task worth automating.
+
 ### Persistence
 
 By default, slopenv persists agent configuration in the current user's home directory under `~/.slopenv/agents/<agent-name>/`. This directory is mounted into the container and symlinked to the agent's expected configuration locations, so authentication and settings persist across runs. Use `-x` to run without persistence.

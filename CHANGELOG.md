@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Added
+- `bin/slopenv` (checks that the docker daemon is actually alive before trying to cage anything, and starts it through systemd or openrc with sudo/doas if you forgot. Again. A missing docker group gets you a pointed error instead of a root password prompt)
+
+### Fixed
+- `bin/slopenv` (claude-code no longer asks whether you trust the folder every single time. It was started in `$HOME` with the project path as its *first prompt*, so it dutifully answered a path, refused to remember trust for a home directory, and threw every project into one shared history bucket. It now starts inside the project like a normal program)
+- `agents/claude-code/Dockerfile` (dropped `CMD ["/workspace"]`, which was also being sent as a prompt. Rebuild the image)
+- `AGENTS.md` (agents now must never commit on their own. Trust issues, but the healthy kind)
+
 ## 0.1.0 - 2026-10-25
 
 ### Fixed

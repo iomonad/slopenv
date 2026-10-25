@@ -9,6 +9,52 @@ usage() {
   exit 1
 }
 
+# Make sure the docker daemon answers, starting it through systemd or openrc if not
+ensure_docker() {
+  if ! command -v docker >/dev/null 2>&1; then
+    echo "Error: docker is not installed or not in PATH" >&2
+    exit 1
+  fi
+
+  err="$(docker info 2>&1 >/dev/null)" && return 0
+  case "$err" in
+    *"permission denied"*)
+      echo "Error: no permission to talk to the docker daemon (is $(id -un) in the docker group?)" >&2
+      exit 1
+      ;;
+  esac
+
+  if [ "$(id -u)" -eq 0 ]; then
+    asroot=""
+  elif command -v sudo >/dev/null 2>&1; then
+    asroot="sudo"
+  elif command -v doas >/dev/null 2>&1; then
+    asroot="doas"
+  else
+    echo "Error: docker daemon is not running and neither sudo nor doas is available to start it" >&2
+    exit 1
+  fi
+
+  if [ -d /run/systemd/system ] && command -v systemctl >/dev/null 2>&1; then
+    echo "docker daemon is not running, starting it with systemd" >&2
+    $asroot systemctl start docker || exit 1
+  elif command -v rc-service >/dev/null 2>&1; then
+    echo "docker daemon is not running, starting it with openrc" >&2
+    $asroot rc-service docker start || exit 1
+  else
+    echo "Error: docker daemon is not running and no systemd or openrc found to start it" >&2
+    exit 1
+  fi
+
+  # The service returning does not mean the socket is ready yet
+  for _ in 1 2 3 4 5 6 7 8 9 10; do
+    docker info >/dev/null 2>&1 && return 0
+    sleep 1
+  done
+  echo "Error: docker daemon did not come up after starting it" >&2
+  exit 1
+}
+
 list_sessions() {
   sessions="$(docker ps --filter "name=slopenv-" --format '{{.Names}}\t{{.Status}}' | grep '^slopenv-')"
   if [ -z "$sessions" ]; then
@@ -34,6 +80,7 @@ while getopts "a:xlLh" opt; do
       exit 0
       ;;
     L)
+      ensure_docker
       list_sessions
       exit 0
       ;;
@@ -67,6 +114,8 @@ if [ "$valid_agent" -ne 1 ]; then
   exit 1
 fi
 
+ensure_docker
+
 image="ghcr.io/iomonad/slopenv/agent/${agent}:latest"
 
 # Derive a readable, unique container name, e.g. slopenv-opencode-slopenv-12345
@@ -99,7 +148,7 @@ fi
 if [ -n "$persist_dir" ]; then
   case "$agent" in
     claude-code)
-      exec docker run "${docker_args[@]}" --entrypoint /bin/sh "$image" -c "mkdir -p /workspace/.agent-persist/claude && rm -rf /workspace/.claude && ln -s /workspace/.agent-persist/claude /workspace/.claude && ln -snf /workspace/.agent-persist/claude.json /workspace/.claude.json && exec /sbin/tini -- claude $target_dir"
+      exec docker run "${docker_args[@]}" --entrypoint /bin/sh "$image" -c "mkdir -p /workspace/.agent-persist/claude && rm -rf /workspace/.claude && ln -s /workspace/.agent-persist/claude /workspace/.claude && ln -snf /workspace/.agent-persist/claude.json /workspace/.claude.json && cd $target_dir && exec /sbin/tini -- claude"
       ;;
     opencode)
       exec docker run "${docker_args[@]}" --entrypoint /bin/sh "$image" -c "mkdir -p /workspace/.agent-persist && mkdir -p /workspace/.config /workspace/.local/share /workspace/.local/state /workspace/.cache && ln -snf /workspace/.agent-persist /workspace/.config/opencode && ln -snf /workspace/.agent-persist /workspace/.local/share/opencode && ln -snf /workspace/.agent-persist /workspace/.local/state/opencode && exec /sbin/tini -- opencode -c $target_dir"
@@ -109,5 +158,13 @@ if [ -n "$persist_dir" ]; then
       ;;
   esac
 else
-  exec docker run "${docker_args[@]}" "$image" $target_dir
+  case "$agent" in
+    # claude takes a positional arg as the first prompt, not a directory
+    claude-code)
+      exec docker run "${docker_args[@]}" -w "$target_dir" "$image"
+      ;;
+    *)
+      exec docker run "${docker_args[@]}" "$image" $target_dir
+      ;;
+  esac
 fi
