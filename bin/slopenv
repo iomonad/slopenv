@@ -83,7 +83,7 @@ fi
 if [ -n "$persist_dir" ]; then
   case "$agent" in
     claude-code)
-      exec docker run "${docker_args[@]}" --entrypoint /bin/sh "$image" -c "mkdir -p /workspace/.agent-persist && ln -snf /workspace/.agent-persist /workspace/.claude && exec /sbin/tini -- claude $target_dir"
+      exec docker run "${docker_args[@]}" --entrypoint /bin/sh "$image" -c "mkdir -p /workspace/.agent-persist && ln -snf /workspace/.agent-persist/claude /workspace/.claude && ln -snf /workspace/.agent-persist/claude.json /workspace/.claude.json && exec /sbin/tini -- claude $target_dir"
       ;;
     opencode)
       exec docker run "${docker_args[@]}" --entrypoint /bin/sh "$image" -c "mkdir -p /workspace/.agent-persist && mkdir -p /workspace/.config /workspace/.local/share /workspace/.local/state /workspace/.cache && ln -snf /workspace/.agent-persist /workspace/.config/opencode && ln -snf /workspace/.agent-persist /workspace/.local/share/opencode && ln -snf /workspace/.agent-persist /workspace/.local/state/opencode && ln -snf /workspace/.agent-persist /workspace/.opencode && exec /sbin/tini -- opencode -c $target_dir"
