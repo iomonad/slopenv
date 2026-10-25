@@ -6,11 +6,12 @@ This document provides context for coding agents working in this repository.
 slopenv is a minimal, suckless sandbox for running AI agents. It uses a small shell script + Docker to mount a working directory and run an agent in a containerized, reproducible environment.
 
 ## Architecture
-- Entry: `bin/slopenv [-a agent] [-x] [-l] [-L] [directory]` (defaults: agent=`opencode`, directory=`$PWD`; agents: `opencode`, `claude-code`). `-L` lists running `slopenv-*` containers with their uptime. Resolves absolute path, validates directory and agent. Runs `docker run --rm -it --name slopenv-<agent>-<project>-<pid>` with `-v "$workdir:/workspace/<basename>"`, `-w /workspace`, `--user "$(id -u):$(id -g)"`, env `HOME=/workspace`, `TERM` (default `xterm-256color`), `LANG` (default `C.UTF-8`). Executes image `ghcr.io/iomonad/slopenv/agent/${agent}:latest` with arg `/workspace/<basename>`, except claude-code, which is started with cwd `/workspace/<basename>` and no arg.
+- Entry: `bin/slopenv [-a agent] [-x] [-l] [-L] [-v] [directory]`. `-v` prints the version: the baked-in release tag, else the commit hash of the repo it runs from, else `unknown`. (defaults: agent=`opencode`, directory=`$PWD`; agents: `opencode`, `claude-code`). `-L` lists running `slopenv-*` containers with their uptime. Resolves absolute path, validates directory and agent. Runs `docker run --rm -it --name slopenv-<agent>-<project>-<pid>` with `-v "$workdir:/workspace/<basename>"`, `-w /workspace`, `--user "$(id -u):$(id -g)"`, env `HOME=/workspace`, `TERM` (default `xterm-256color`), `LANG` (default `C.UTF-8`). Executes image `ghcr.io/iomonad/slopenv/agent/${agent}:latest` with arg `/workspace/<basename>`, except claude-code, which is started with cwd `/workspace/<basename>` and no arg.
 - Images:
   - Base: `base/Dockerfile` builds `ghcr.io/iomonad/slopenv/core:latest` (FROM `alpine:3.24.3` pinned by digest). Installs `tini`, `libstdc++`, `libgcc`, `ripgrep`, `bash`, `curl`, `jq`, `git`, `github-cli`. Creates user `marvin` (`adduser -D -h /workspace -s /bin/bash marvin`), sets `USER marvin`, `WORKDIR /workspace`. Sets `ENV LANG=C.UTF-8 TERM=xterm-256color` and `HOME=/workspace` (on separate line).
   - Agents: `agents/<agent>/Dockerfile` FROM core. Current `opencode`: installs via `curl -fsSL https://opencode.ai/v2/install | bash`, sets `ENV PATH="$PATH:/workspace/.opencode/bin"`, `ENTRYPOINT ["/sbin/tini", "--", "opencode"]`, `CMD ["/workspace"]`.
-- Build: `build.sh` builds core then opencode agent.
+- Build: `build.sh` builds core, then the opencode and claude-code agents. Tags images with `SLOPENV_VERSION` (default: commit hash) and writes `dist/slopenv` with that version baked in.
+- Release: `.github/workflows/release.yml` runs on any pushed tag. It calls `build.sh` with `SLOPENV_VERSION=<tag>` and attaches `dist/slopenv` to a GitHub release. Images are not pushed.
 
 ## Key files
 - `bin/slopenv` - runtime launcher

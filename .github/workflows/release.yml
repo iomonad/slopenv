@@ -1,0 +1,58 @@
+name: release
+
+on:
+  # Tags only: a release is cut from a version, never from a branch. Any tag, because the first one (0.1.0) has no v prefix
+  push:
+    tags:
+      - "*"
+
+permissions: {}
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build images and versioned script
+        env:
+          SLOPENV_VERSION: ${{ github.ref_name }}
+        run: ./build.sh
+
+      - name: Upload versioned script
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: slopenv
+          path: dist/slopenv
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    # Only this job may write, and only to create the release
+    permissions:
+      contents: write
+    steps:
+      - name: Download versioned script
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: slopenv
+          path: dist
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: gh release create "$TAG" dist/slopenv --title "$TAG" --verify-tag --generate-notes

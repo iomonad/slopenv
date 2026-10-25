@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- `bin/slopenv -v` (prints the version, so you can finally tell which slopenv you are running instead of guessing from the timestamp. A release build reports its tag. A checkout reports its commit hash. A copy that wandered off into `~/.local/bin` reports `unknown`, which is honest, at least)
+- `.github/workflows/release.yml` (runs only when a tag is pushed. It builds the images tagged with that tag name, and cuts a GitHub release with the versioned `slopenv` script attached. The images are built and then left to rot on the runner, because nothing pulls them yet. Only the write token goes to the job that creates the release, which is the only job that has earned one)
+- `.gitignore` (ignores `dist/`, where the versioned script lives. Build output does not belong in git, no matter how proud it makes you)
 - `bin/slopenv` (checks that the docker daemon is actually alive before trying to cage anything, and offers to start it through systemd or openrc with sudo/doas if you forgot. Again. It asks first, since silently borrowing root is exactly the kind of initiative nobody wants from a tool that babysits AI agents. No terminal, no prompt, just the command you should have run. A missing docker group gets you a pointed error instead of a root password prompt)
 - `.github/workflows/ci.yml` (a GitHub Actions workflow that runs `./build.sh` on every push and pull request, so we can confirm the images still build before anyone trusts them with a shell. It builds. It does not test whether the agents do anything useful, which is a separate and far more depressing exercise)
 - `.github/workflows/zizmor.yml` (runs zizmor, the workflow linter that judges our YAML so we don't have to, on changes to `.github/**` and every Monday. Pinned to zizmor 1.30.1 because the 1.31 release is less than two weeks old and we don't trust anything that new, even our own linter)
@@ -12,6 +15,7 @@ All notable changes to this project will be documented in this file.
 - `base/Dockerfile` (adds `github-cli`, so agents can now poke GitHub with `gh` from inside the cage. It is not logged in, because the launcher does not forward tokens or mount `~/.config/gh` (yet). Run `gh auth login` yourself, with persistence on, and hope it sticks. Do not hand an AI agent a token with more scopes than you would give a stranger)
 
 ### Changed
+- `build.sh` (tags images with `SLOPENV_VERSION` when it is set, and with the commit hash when it is not, so local builds behave exactly as before. It also writes `dist/slopenv` with the version baked in, and refuses version strings with characters that would make `sed` cry. The image names are the same, only the tag is more honest)
 - `.github/workflows/ci.yml` (hardened to match `.github/AGENTS.md`: empty top-level permissions with `contents: read` per job, `actions/checkout` pinned to a full SHA and not persisting credentials, `ubuntu-24.04` instead of a moving target, a 30-minute timeout, and concurrency that cancels superseded pull request runs. Nobody asked for a 30-minute cap, but a hung CI job is just a very slow way to waste money)
 
 ### Fixed

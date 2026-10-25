@@ -3,10 +3,25 @@
 agent="opencode"
 use_persistence=1
 AVAILABLE_AGENTS="opencode claude-code"
+# Replaced by build.sh in dist/slopenv, the copy a release ships
+SLOPENV_VERSION=""
 
 usage() {
-  echo "Usage: $(basename "$0") [-a agent] [-x] [-l] [-L] [directory]" >&2
+  echo "Usage: $(basename "$0") [-a agent] [-x] [-l] [-L] [-v] [directory]" >&2
   exit 1
+}
+
+# Release version when baked in, else the commit hash of the repo this script runs from
+version() {
+  if [ -n "$SLOPENV_VERSION" ]; then
+    echo "$SLOPENV_VERSION"
+    return
+  fi
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+  if [ "$(git -C "$script_dir" rev-parse --show-toplevel 2>/dev/null)" = "$(dirname "$script_dir")" ]; then
+    git -C "$script_dir" rev-parse --short HEAD 2>/dev/null && return
+  fi
+  echo "unknown"
 }
 
 # Make sure the docker daemon answers, starting it through systemd or openrc if not
@@ -81,7 +96,7 @@ list_sessions() {
   done
 }
 
-while getopts "a:xlLh" opt; do
+while getopts "a:xlLhv" opt; do
   case "$opt" in
     a)
       agent="$OPTARG"
@@ -96,6 +111,10 @@ while getopts "a:xlLh" opt; do
     L)
       ensure_docker
       list_sessions
+      exit 0
+      ;;
+    v)
+      echo "slopenv $(version)"
       exit 0
       ;;
     h)
