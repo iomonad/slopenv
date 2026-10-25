@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## 0.1.0 - 2026-10-25
 
 ### Fixed
 - `bin/slopenv` (claude-code persistence actually persists now: the image ships a real `~/.claude`, so `ln -snf` politely nested a dangling link inside it and credentials, sessions and history evaporated with `--rm`. Only `.claude.json` survived, like a cockroach)
