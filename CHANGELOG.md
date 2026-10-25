@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Fixed
+- `bin/slopenv` (claude-code persistence actually persists now: the image ships a real `~/.claude`, so `ln -snf` politely nested a dangling link inside it and credentials, sessions and history evaporated with `--rm`. Only `.claude.json` survived, like a cockroach)
+- `bin/slopenv` (dropped the opencode `~/.opencode` symlink, which did nothing, and would have deleted the binary if it ever worked)
+- `bin/slopenv` (generic agents no longer nest links inside directories baked into their image)
+- `AGENTS.md` (mount path, flags and persistence description caught up with reality)
+
 ### Added
 - `README.md` (added delightfully sarcastic "Dogfooding" section — yes, we willingly cage ourselves to build the cage)
 - Agent configuration persistence in `~/.slopenv/agents/<agent-name>/` mounted by default for all agents

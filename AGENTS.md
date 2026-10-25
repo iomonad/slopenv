@@ -6,7 +6,7 @@ This document provides context for coding agents working in this repository.
 slopenv is a minimal, suckless sandbox for running AI agents. It uses a small shell script + Docker to mount a working directory and run an agent in a containerized, reproducible environment.
 
 ## Architecture
-- Entry: `bin/slopenv [-a agent] [directory]` (defaults: agent=`opencode`, directory=`$PWD`). Resolves absolute path, validates directory. Runs `docker run --rm -it` with `-v "$workdir:/workspace/$workdir"`, `-w /workspace`, `--user "$(id -u):$(id -g)"`, env `HOME=/workspace`, `TERM` (default `xterm-256color`), `LANG` (default `C.UTF-8`). Executes image `ghcr.io/iomonad/slopenv/agent/${agent}:latest` with arg `/workspace/$workdir`.
+- Entry: `bin/slopenv [-a agent] [-x] [-l] [directory]` (defaults: agent=`opencode`, directory=`$PWD`; agents: `opencode`, `claude-code`). Resolves absolute path, validates directory and agent. Runs `docker run --rm -it --name slopenv-<agent>-<project>-<pid>` with `-v "$workdir:/workspace/<basename>"`, `-w /workspace`, `--user "$(id -u):$(id -g)"`, env `HOME=/workspace`, `TERM` (default `xterm-256color`), `LANG` (default `C.UTF-8`). Executes image `ghcr.io/iomonad/slopenv/agent/${agent}:latest` with arg `/workspace/<basename>`.
 - Images:
   - Base: `base/Dockerfile` builds `ghcr.io/iomonad/slopenv/core:latest` (FROM `alpine:3.24.3` pinned by digest). Installs `tini`, `libstdc++`, `libgcc`, `ripgrep`, `bash`, `curl`, `jq`, `git`. Creates user `marvin` (`adduser -D -h /workspace -s /bin/bash marvin`), sets `USER marvin`, `WORKDIR /workspace`. Sets `ENV LANG=C.UTF-8 TERM=xterm-256color` and `HOME=/workspace` (on separate line).
   - Agents: `agents/<agent>/Dockerfile` FROM core. Current `opencode`: installs via `curl -fsSL https://opencode.ai/v2/install | bash`, sets `ENV PATH="$PATH:/workspace/.opencode/bin"`, `ENTRYPOINT ["/sbin/tini", "--", "opencode"]`, `CMD ["/workspace"]`.
@@ -26,7 +26,8 @@ slopenv is a minimal, suckless sandbox for running AI agents. It uses a small sh
 - License is WTFPL v2.
 
 ## Development notes
-- The launcher passes `-w /workspace` and mounts as `-v "$workdir:/workspace/$workdir"`, then runs with `/workspace/$workdir` as positional arg to the container (agent sees the project dir). User is mapped to host uid/gid.
+- The launcher passes `-w /workspace` and mounts as `-v "$workdir:/workspace/<basename>"`, then runs with `/workspace/<basename>` as positional arg to the container (agent sees the project dir). User is mapped to host uid/gid.
+- Persistence (default, `-x` disables): `~/.slopenv/agents/<agent>` is bind-mounted read-write at `/workspace/.agent-persist` and symlinked into the agent's config paths at startup. Beware: if the image already ships that path as a real directory (claude-code's `~/.claude`), `ln -snf` silently nests the link inside it; replace the directory first. Never replace `~/.opencode`, it holds the binary.
 - Base sets `HOME=/workspace` for the non-root user.
 - Opencode install is pulled from the official installer (curl | bash).
 
