@@ -67,6 +67,13 @@ Read this before touching anything under `.github/`. CI runs with write tokens, 
 - [ ] `actionlint` clean
 - [ ] Ran green on GitHub, not just on a laptop
 
+## Scanning
+
+- `.github/workflows/zizmor.yml` runs [zizmor](https://github.com/zizmorcore/zizmor) on pushes and pull requests touching `.github/**`, and every Monday. The schedule exists because zizmor's rules and advisories change while our YAML doesn't.
+- A zizmor finding is a blocker. Fix it, or document a false positive in a `zizmor.yml` config with the reason next to it. Silencing without a reason is not an option.
+- The zizmor version is pinned in the workflow and must exist in the action's `support/versions` file. Bump it deliberately, through Dependabot, not by hand.
+- The repo is treated as private: results go to annotations, not the Security tab (no SARIF upload, no GHAS assumed).
+
 ## Follow-ups (not done yet)
 
 - Dependabot config for `github-actions` ecosystem, so SHA pins do not rot.

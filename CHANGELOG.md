@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - `bin/slopenv` (checks that the docker daemon is actually alive before trying to cage anything, and offers to start it through systemd or openrc with sudo/doas if you forgot. Again. It asks first, since silently borrowing root is exactly the kind of initiative nobody wants from a tool that babysits AI agents. No terminal, no prompt, just the command you should have run. A missing docker group gets you a pointed error instead of a root password prompt)
 - `.github/workflows/ci.yml` (a GitHub Actions workflow that runs `./build.sh` on every push and pull request, so we can confirm the images still build before anyone trusts them with a shell. It builds. It does not test whether the agents do anything useful, which is a separate and far more depressing exercise)
+- `.github/workflows/zizmor.yml` (runs zizmor, the workflow linter that judges our YAML so we don't have to, on changes to `.github/**` and every Monday. Pinned to zizmor 1.30.1 because the 1.31 release is less than two weeks old and we don't trust anything that new, even our own linter)
 - `.github/AGENTS.md` (the rules for touching CI: least-privilege permissions, SHA-pinned actions, no untrusted event data in `run:`, no `pull_request_target`, and a checklist for anyone who thinks a workflow is "just a small YAML tweak". CI runs with write tokens and secrets, so it deserves more paranoia than your laptop)
 
 ### Changed
