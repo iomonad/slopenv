@@ -7,6 +7,10 @@ All notable changes to this project will be documented in this file.
 ### Added
 - `bin/slopenv` (checks that the docker daemon is actually alive before trying to cage anything, and offers to start it through systemd or openrc with sudo/doas if you forgot. Again. It asks first, since silently borrowing root is exactly the kind of initiative nobody wants from a tool that babysits AI agents. No terminal, no prompt, just the command you should have run. A missing docker group gets you a pointed error instead of a root password prompt)
 - `.github/workflows/ci.yml` (a GitHub Actions workflow that runs `./build.sh` on every push and pull request, so we can confirm the images still build before anyone trusts them with a shell. It builds. It does not test whether the agents do anything useful, which is a separate and far more depressing exercise)
+- `.github/AGENTS.md` (the rules for touching CI: least-privilege permissions, SHA-pinned actions, no untrusted event data in `run:`, no `pull_request_target`, and a checklist for anyone who thinks a workflow is "just a small YAML tweak". CI runs with write tokens and secrets, so it deserves more paranoia than your laptop)
+
+### Changed
+- `.github/workflows/ci.yml` (hardened to match `.github/AGENTS.md`: empty top-level permissions with `contents: read` per job, `actions/checkout` pinned to a full SHA and not persisting credentials, `ubuntu-24.04` instead of a moving target, a 30-minute timeout, and concurrency that cancels superseded pull request runs. Nobody asked for a 30-minute cap, but a hung CI job is just a very slow way to waste money)
 
 ### Fixed
 - `bin/slopenv` (claude-code no longer asks whether you trust the folder every single time. It was started in `$HOME` with the project path as its *first prompt*, so it dutifully answered a path, refused to remember trust for a home directory, and threw every project into one shared history bucket. It now starts inside the project like a normal program)
