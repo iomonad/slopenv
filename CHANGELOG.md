@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- `bin/slopenv -u` (pulls the agent image before starting it, because local images age in silence like milk. Successful pulls are stamped in `~/.slopenv/last-update`. Without `-u`, an image older than five days, or never pulled, gets a reminder: a yes/no prompt in a terminal, a warning otherwise. Declining or a failed pull never blocks the launch. The pull will fail until someone actually publishes the images, which is a separate and suspiciously avoided task)
 - `bin/slopenv -v` (prints the version, so you can finally tell which slopenv you are running instead of guessing from the timestamp. A release build reports its tag. A checkout reports its commit hash. A copy that wandered off into `~/.local/bin` reports `unknown`, which is honest, at least)
 - `.github/workflows/release.yml` (runs only when a tag is pushed. It builds the images tagged with that tag name, and cuts a GitHub release with the versioned `slopenv` script attached. The images are built and then left to rot on the runner, because nothing pulls them yet. Only the write token goes to the job that creates the release, which is the only job that has earned one)
 - `.gitignore` (ignores `dist/`, where the versioned script lives. Build output does not belong in git, no matter how proud it makes you)

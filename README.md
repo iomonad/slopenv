@@ -24,18 +24,23 @@ If the install directory isn't in your `PATH`, add it to your shell rc as sugges
 Run an agent in a sandboxed environment:
 
 ```bash
-slopenv [-a agent] [-x] [-l] [-L] [-v] [directory]
-# or from repo: ./bin/slopenv [-a agent] [-x] [-l] [-L] [-v] [directory]
+slopenv [-a agent] [-x] [-l] [-L] [-u] [-v] [directory]
+# or from repo: ./bin/slopenv [-a agent] [-x] [-l] [-L] [-u] [-v] [directory]
 ```
 
 - `-a agent` - Agent type to use (default: `opencode`). See [Available Agents](#available-agents).
 - `-x` - Disable persistence (by default, agent configuration is persisted)
 - `-l` - List available agents
 - `-L` - List active sessions with their uptime
+- `-u` - Pull the agent image before starting it
 - `-v` - Show the version: the release tag for a built script, the commit hash when run from the repo, `unknown` otherwise
 - `[directory]` - Working directory to mount (default: current directory)
 
 If the docker daemon is not running, `slopenv` asks whether to start it through `systemctl` (systemd) or `rc-service` (openrc), using `sudo` or `doas` when not root. Answering anything but yes aborts, and so does running without a terminal. Because apparently remembering to start a daemon is now also a task worth automating, but not one worth automating *without asking*.
+
+### Image refresh
+
+Agent images are built locally and pulled from `ghcr.io` on request. The time of the last successful pull is kept in `~/.slopenv/last-update` (a single file shared by all agents). Pass `-u` to pull the image before starting. Without `-u`, if that file is missing, unreadable or older than 5 days, `slopenv` asks whether to pull now when run from a terminal, and only warns otherwise. Saying no, or a failed pull, never blocks the launch: the local image is used instead. A pull will fail until the images are actually published, which they currently are not, so consider this a reminder with good intentions.
 
 ### Persistence
 
@@ -60,7 +65,7 @@ Images are tagged with the commit hash, plus `latest`. Set `SLOPENV_VERSION` to 
 SLOPENV_VERSION=0.1.0 ./build.sh
 ```
 
-Pushing a tag runs `.github/workflows/release.yml`, which does exactly that and attaches `dist/slopenv` to a GitHub release. The images are built on the runner and not pushed anywhere, because nothing pulls them yet.
+Pushing a tag runs `.github/workflows/release.yml`, which does exactly that and attaches `dist/slopenv` to a GitHub release. The images are built on the runner and not pushed anywhere, because nothing has pushed them yet. `-u` and the refresh reminder are ready for the day they do.
 
 Or build them manually:
 

@@ -2,14 +2,19 @@
 
 agent="opencode"
 use_persistence=1
+update=0
 AVAILABLE_AGENTS="opencode claude-code"
 # Replaced by build.sh in dist/slopenv, the copy a release ships
 SLOPENV_VERSION=""
 
 usage() {
-  echo "Usage: $(basename "$0") [-a agent] [-x] [-l] [-L] [-v] [directory]" >&2
+  echo "Usage: $(basename "$0") [-a agent] [-x] [-l] [-L] [-u] [-v] [directory]" >&2
   exit 1
 }
+
+# Epoch of the last successful image pull, shared by all agents
+UPDATE_STAMP="${HOME}/.slopenv/last-update"
+UPDATE_MAX_AGE=$((5 * 86400))
 
 # Release version when baked in, else the commit hash of the repo this script runs from
 version() {
@@ -96,7 +101,27 @@ list_sessions() {
   done
 }
 
-while getopts "a:xlLhv" opt; do
+# Pull the agent image, refreshing the stamp on success. Failure is a warning, not a blocker
+pull_image() {
+  if ! docker pull "$1"; then
+    echo "Warning: could not pull $1, continuing with the local image" >&2
+    return 1
+  fi
+  mkdir -p "$(dirname "$UPDATE_STAMP")"
+  date +%s > "$UPDATE_STAMP"
+}
+
+# Stale means: no stamp, a garbled stamp, or older than UPDATE_MAX_AGE
+image_is_stale() {
+  [ -r "$UPDATE_STAMP" ] || return 0
+  stamp="$(cat "$UPDATE_STAMP")"
+  case "$stamp" in
+    ""|*[!0-9]*) return 0 ;;
+  esac
+  [ $(( $(date +%s) - 10#$stamp )) -gt "$UPDATE_MAX_AGE" ]
+}
+
+while getopts "a:xlLhvu" opt; do
   case "$opt" in
     a)
       agent="$OPTARG"
@@ -116,6 +141,9 @@ while getopts "a:xlLhv" opt; do
     v)
       echo "slopenv $(version)"
       exit 0
+      ;;
+    u)
+      update=1
       ;;
     h)
       usage
@@ -150,6 +178,20 @@ fi
 ensure_docker
 
 image="ghcr.io/iomonad/slopenv/agent/${agent}:latest"
+
+if [ "$update" -eq 1 ]; then
+  pull_image "$image"
+elif image_is_stale; then
+  if [ -t 0 ]; then
+    printf 'image %s has not been pulled in over 5 days. Pull now? [Y/n] ' "$image" >&2
+    read -r answer
+    case "$answer" in
+      ""|[yY]|[yY][eE][sS]) pull_image "$image" ;;
+    esac
+  else
+    echo "Warning: image $image has not been pulled in over 5 days (use -u to refresh)" >&2
+  fi
+fi
 
 # Derive a readable, unique container name, e.g. slopenv-opencode-slopenv-12345
 project="$(basename "$workdir" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_.-]/-/g')"
