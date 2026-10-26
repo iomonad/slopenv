@@ -36,6 +36,7 @@ slopenv is a minimal, suckless sandbox for running AI agents. It uses a small sh
 ### VCS
 - The agent must never commit automatically, and never push. Only commit when explicitly asked, under the email iomonad@riseup.net and the username iomonad
 - Update CHANGELOG.md for each non planning change
+- Commits and pull requests carry no AI attribution: no `Co-Authored-By` trailers, no "Generated with" footers. The commit is the author's, full stop, and the trace stays in the shell history where it belongs
 - Commit format used: Conventional Commits 1.0.0
   - Format: <type>[optional scope]: <description>
   - Notes: you should try to specify scope when you can
