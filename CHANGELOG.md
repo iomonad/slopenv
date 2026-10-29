@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - `AGENTS.md` (commits and pull requests now ship without AI attribution: no `Co-Authored-By` trailers and no "Generated with" footers. The author takes the blame, and the robot gets no credit, which is the first fair deal this repo has offered it)
+- `bin/slopenv -u` stamps each agent image separately (`~/.slopenv/.last-update-<agent>` instead of one file shared by everyone, and hidden as a dotfile so the directory stays tidy for people who only ever wanted to look at their agents. Pulling `opencode` used to quietly reset the clock for `claude-code`, which is the kind of teamwork nobody asked for. The old `~/.slopenv/last-update*` files are ignored, so expect one extra nag per agent after upgrading. Consider it a reminder that the stale clock was never your friend)
 
 ## 0.1.3 - 2026-10-26
 

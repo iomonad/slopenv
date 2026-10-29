@@ -12,8 +12,10 @@ usage() {
   exit 1
 }
 
-# Epoch of the last successful image pull, shared by all agents
-UPDATE_STAMP="${HOME}/.slopenv/last-update"
+# Epoch of the last successful image pull, one file per agent
+update_stamp() {
+  echo "${HOME}/.slopenv/.last-update-$1"
+}
 UPDATE_MAX_AGE=$((5 * 86400))
 
 # Release version when baked in, else the commit hash of the repo this script runs from
@@ -101,20 +103,22 @@ list_sessions() {
   done
 }
 
-# Pull the agent image, refreshing the stamp on success. Failure is a warning, not a blocker
+# Pull the agent image, refreshing that agent's stamp on success. Failure is a warning, not a blocker
 pull_image() {
   if ! docker pull "$1"; then
     echo "Warning: could not pull $1, continuing with the local image" >&2
     return 1
   fi
-  mkdir -p "$(dirname "$UPDATE_STAMP")"
-  date +%s > "$UPDATE_STAMP"
+  stamp_file="$(update_stamp "$2")"
+  mkdir -p "$(dirname "$stamp_file")"
+  date +%s > "$stamp_file"
 }
 
 # Stale means: no stamp, a garbled stamp, or older than UPDATE_MAX_AGE
 image_is_stale() {
-  [ -r "$UPDATE_STAMP" ] || return 0
-  stamp="$(cat "$UPDATE_STAMP")"
+  stamp_file="$(update_stamp "$1")"
+  [ -r "$stamp_file" ] || return 0
+  stamp="$(cat "$stamp_file")"
   case "$stamp" in
     ""|*[!0-9]*) return 0 ;;
   esac
@@ -180,13 +184,13 @@ ensure_docker
 image="ghcr.io/iomonad/slopenv/agent/${agent}:latest"
 
 if [ "$update" -eq 1 ]; then
-  pull_image "$image"
-elif image_is_stale; then
+  pull_image "$image" "$agent"
+elif image_is_stale "$agent"; then
   if [ -t 0 ]; then
     printf 'image %s has not been pulled in over 5 days. Pull now? [Y/n] ' "$image" >&2
     read -r answer
     case "$answer" in
-      ""|[yY]|[yY][eE][sS]) pull_image "$image" ;;
+      ""|[yY]|[yY][eE][sS]) pull_image "$image" "$agent" ;;
     esac
   else
     echo "Warning: image $image has not been pulled in over 5 days (use -u to refresh)" >&2

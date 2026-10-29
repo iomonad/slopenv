@@ -40,7 +40,7 @@ If the docker daemon is not running, `slopenv` asks whether to start it through 
 
 ### Image refresh
 
-Agent images are built by the release workflow and pulled from `ghcr.io` on request. The time of the last successful pull is kept in `~/.slopenv/last-update` (a single file shared by all agents). Pass `-u` to pull the image before starting. Without `-u`, if that file is missing, unreadable or older than 5 days, `slopenv` asks whether to pull now when run from a terminal, and only warns otherwise. Saying no, or a failed pull, never blocks the launch: the local image is used instead.
+Agent images are built by the release workflow and pulled from `ghcr.io` on request. The time of the last successful pull is kept per agent in `~/.slopenv/.last-update-<agent>` (so pulling `opencode` says nothing about `claude-code`). Pass `-u` to pull the image before starting. Without `-u`, if that file is missing, unreadable or older than 5 days, `slopenv` asks whether to pull now when run from a terminal, and only warns otherwise. Saying no, or a failed pull, never blocks the launch: the local image is used instead.
 
 ### Persistence
 
