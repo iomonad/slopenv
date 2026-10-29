@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Added
+- `.github/workflows/release.yml` publishes the images to `ghcr.io` (a tag now pushes the core and agent images under that tag and `latest`, finally giving `bin/slopenv -u` something to pull. The images travel from the build job to a `publish` job through an artifact, and that job holds the only `packages: write` in the file and runs no repository code. The release waits for the push, so no release points at air. Packages still start private and must be made public by hand, because GitHub enjoys making you click things)
+
 ### Changed
 - `AGENTS.md` (commits and pull requests now ship without AI attribution: no `Co-Authored-By` trailers and no "Generated with" footers. The author takes the blame, and the robot gets no credit, which is the first fair deal this repo has offered it)
 
