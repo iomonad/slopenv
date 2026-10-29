@@ -40,7 +40,7 @@ If the docker daemon is not running, `slopenv` asks whether to start it through 
 
 ### Image refresh
 
-Agent images are built locally and pulled from `ghcr.io` on request. The time of the last successful pull is kept in `~/.slopenv/last-update` (a single file shared by all agents). Pass `-u` to pull the image before starting. Without `-u`, if that file is missing, unreadable or older than 5 days, `slopenv` asks whether to pull now when run from a terminal, and only warns otherwise. Saying no, or a failed pull, never blocks the launch: the local image is used instead. A pull will fail until the images are actually published, which they currently are not, so consider this a reminder with good intentions.
+Agent images are built by the release workflow and pulled from `ghcr.io` on request. The time of the last successful pull is kept in `~/.slopenv/last-update` (a single file shared by all agents). Pass `-u` to pull the image before starting. Without `-u`, if that file is missing, unreadable or older than 5 days, `slopenv` asks whether to pull now when run from a terminal, and only warns otherwise. Saying no, or a failed pull, never blocks the launch: the local image is used instead.
 
 ### Persistence
 
@@ -65,7 +65,9 @@ Images are tagged with the commit hash, plus `latest`. Set `SLOPENV_VERSION` to 
 SLOPENV_VERSION=0.1.0 ./build.sh
 ```
 
-Pushing a tag runs `.github/workflows/release.yml`, which does exactly that and attaches `dist/slopenv` to a GitHub release. The images are built on the runner and not pushed anywhere, because nothing has pushed them yet. `-u` and the refresh reminder are ready for the day they do.
+Pushing a tag runs `.github/workflows/release.yml`, which builds the images, pushes them to `ghcr.io` under that tag and `latest`, and attaches `dist/slopenv` to a GitHub release. The release is created only after the images are pushed.
+
+New packages on `ghcr.io` start private. After the first release, set each of `slopenv/core`, `slopenv/agent/opencode` and `slopenv/agent/claude-code` to public in the package settings, or anonymous pulls will fail.
 
 Or build them manually:
 
