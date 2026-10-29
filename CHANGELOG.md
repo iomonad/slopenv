@@ -4,12 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Changed
+- `bin/slopenv -u` stamps each agent image separately (`~/.slopenv/.last-update-<agent>` instead of one file shared by everyone, and hidden as a dotfile so the directory stays tidy for people who only ever wanted to look at their agents. Pulling `opencode` used to quietly reset the clock for `claude-code`, which is the kind of teamwork nobody asked for. The old `~/.slopenv/last-update*` files are ignored, so expect one extra nag per agent after upgrading. Consider it a reminder that the stale clock was never your friend)
+
+## 0.1.4 - 2026-10-29
+
 ### Added
 - `.github/workflows/release.yml` publishes the images to `ghcr.io` (a tag now pushes the core and agent images under that tag and `latest`, finally giving `bin/slopenv -u` something to pull. The images travel from the build job to a `publish` job through an artifact, and that job holds the only `packages: write` in the file and runs no repository code. The release waits for the push, so no release points at air. Packages still start private and must be made public by hand, because GitHub enjoys making you click things)
 
 ### Changed
 - `AGENTS.md` (commits and pull requests now ship without AI attribution: no `Co-Authored-By` trailers and no "Generated with" footers. The author takes the blame, and the robot gets no credit, which is the first fair deal this repo has offered it)
-- `bin/slopenv -u` stamps each agent image separately (`~/.slopenv/.last-update-<agent>` instead of one file shared by everyone, and hidden as a dotfile so the directory stays tidy for people who only ever wanted to look at their agents. Pulling `opencode` used to quietly reset the clock for `claude-code`, which is the kind of teamwork nobody asked for. The old `~/.slopenv/last-update*` files are ignored, so expect one extra nag per agent after upgrading. Consider it a reminder that the stale clock was never your friend)
 
 ## 0.1.3 - 2026-10-26
 
