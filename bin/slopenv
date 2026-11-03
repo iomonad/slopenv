@@ -218,6 +218,9 @@ docker_args=(
   -e HOME=/workspace
   -e TERM="${TERM:-xterm-256color}"
   -e LANG="${LANG:-C.UTF-8}"
+  --cap-drop=ALL
+  --security-opt=no-new-privileges:true
+  --pids-limit=512
 )
 
 if [ -n "$persist_dir" ]; then

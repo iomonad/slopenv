@@ -36,6 +36,8 @@ slopenv [-a agent] [-x] [-l] [-L] [-u] [-v] [directory]
 - `-v` - Show the version: the release tag for a built script, the commit hash when run from the repo, `unknown` otherwise
 - `[directory]` - Working directory to mount (default: current directory)
 
+Containers run with all Linux capabilities dropped, `no-new-privileges` set, and a limit of 512 processes. Agents run as an unprivileged user and do not need more.
+
 If the docker daemon is not running, `slopenv` asks whether to start it through `systemctl` (systemd) or `rc-service` (openrc), using `sudo` or `doas` when not root. Answering anything but yes aborts, and so does running without a terminal. Because apparently remembering to start a daemon is now also a task worth automating, but not one worth automating *without asking*.
 
 ### Image refresh
