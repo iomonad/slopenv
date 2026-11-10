@@ -1,0 +1,70 @@
+name: weekly
+
+on:
+  # Sunday 03:23 UTC: off the hour, and away from the Monday zizmor run. Agent images re-run their upstream installers, so a weekly rebuild picks up whatever they ship
+  schedule:
+    - cron: "23 3 * * 0"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: weekly-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build images
+        run: ./build.sh
+
+      - name: Save images
+        run: |
+          mapfile -t images < <(docker images --format '{{.Repository}}:{{.Tag}}' | grep '^ghcr.io/iomonad/slopenv/')
+          docker save -o dist/slopenv-images.tar "${images[@]}"
+
+      - name: Upload images
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: slopenv-images
+          path: dist/slopenv-images.tar
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    # Only this job may push packages. It runs no repository code: it loads the saved images and pushes them, so :latest moves every week
+    permissions:
+      packages: write
+    steps:
+      - name: Download images
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: slopenv-images
+          path: dist
+
+      - name: Load images
+        run: docker load -i dist/slopenv-images.tar
+
+      - name: Log in to ghcr.io
+        env:
+          TOKEN: ${{ github.token }}
+          ACTOR: ${{ github.actor }}
+        run: printf '%s' "$TOKEN" | docker login ghcr.io -u "$ACTOR" --password-stdin
+
+      - name: Push images
+        run: |
+          mapfile -t images < <(docker images --format '{{.Repository}}:{{.Tag}}' | grep '^ghcr.io/iomonad/slopenv/')
+          for image in "${images[@]}"; do
+            docker push "$image"
+          done

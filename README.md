@@ -69,6 +69,8 @@ SLOPENV_VERSION=0.1.0 ./build.sh
 
 Pushing a tag runs `.github/workflows/release.yml`, which builds the images, pushes them to `ghcr.io` under that tag and `latest`, and attaches `dist/slopenv` to a GitHub release. The release is created only after the images are pushed.
 
+Every Sunday, `.github/workflows/weekly.yml` rebuilds all the images from scratch and pushes them to `ghcr.io` under `latest` and the commit hash, so the agents pick up whatever their upstream installers ship. It can also be started by hand from the Actions tab.
+
 New packages on `ghcr.io` start private. After the first release, set each of `slopenv/core`, `slopenv/agent/opencode` and `slopenv/agent/claude-code` to public in the package settings, or anonymous pulls will fail.
 
 Or build them manually:

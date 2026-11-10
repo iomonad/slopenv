@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - `bin/slopenv` drops every Linux capability, sets `no-new-privileges` and caps the container at 512 processes (agents were running with the default capability set, which is a generous amount of power for a program that mostly edits Markdown. Agents do not need root tricks, so they no longer get them)
+- `.github/workflows/weekly.yml` rebuilds and pushes every image each Sunday, and can be run by hand (the agents re-run their upstream installers on every build, so a week-old image is a fossil, and `:latest` now has a pulse. Packages still start private and must be made public by hand, because GitHub enjoys making you click things twice)
 
 ### Changed
 - `bin/slopenv -u` stamps each agent image separately (`~/.slopenv/.last-update-<agent>` instead of one file shared by everyone, and hidden as a dotfile so the directory stays tidy for people who only ever wanted to look at their agents. Pulling `opencode` used to quietly reset the clock for `claude-code`, which is the kind of teamwork nobody asked for. The old `~/.slopenv/last-update*` files are ignored, so expect one extra nag per agent after upgrading. Consider it a reminder that the stale clock was never your friend)
