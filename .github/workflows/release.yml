@@ -26,6 +26,7 @@ jobs:
       - name: Build images and versioned script
         env:
           SLOPENV_VERSION: ${{ github.ref_name }}
+          SLOPENV_RUNTIME: docker
         run: ./build.sh
 
       - name: Save images

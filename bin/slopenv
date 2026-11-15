@@ -91,8 +91,52 @@ ensure_docker() {
   exit 1
 }
 
+# Pick the container runtime: podman when the host has a working one, docker otherwise.
+# SLOPENV_RUNTIME=podman|docker skips the guessing
+select_runtime() {
+  case "${SLOPENV_RUNTIME:-}" in
+    podman)
+      if ! command -v podman >/dev/null 2>&1; then
+        echo "Error: podman is not installed or not in PATH" >&2
+        exit 1
+      fi
+      if ! err="$(podman info 2>&1 >/dev/null)"; then
+        echo "Error: podman is not usable: $err" >&2
+        exit 1
+      fi
+      runtime="podman"
+      ;;
+    docker)
+      ensure_docker
+      runtime="docker"
+      ;;
+    "")
+      if command -v podman >/dev/null 2>&1; then
+        if err="$(podman info 2>&1 >/dev/null)"; then
+          runtime="podman"
+          return 0
+        fi
+        if ! command -v docker >/dev/null 2>&1; then
+          echo "Error: podman is not usable and docker is not installed: $err" >&2
+          exit 1
+        fi
+        echo "Warning: podman is installed but not usable, falling back to docker" >&2
+      elif ! command -v docker >/dev/null 2>&1; then
+        echo "Error: neither podman nor docker is installed or in PATH" >&2
+        exit 1
+      fi
+      ensure_docker
+      runtime="docker"
+      ;;
+    *)
+      echo "Error: unknown SLOPENV_RUNTIME '$SLOPENV_RUNTIME' (podman or docker)" >&2
+      exit 1
+      ;;
+  esac
+}
+
 list_sessions() {
-  sessions="$(docker ps --filter "name=slopenv-" --format '{{.Names}}\t{{.Status}}' | grep '^slopenv-')"
+  sessions="$("$runtime" ps --filter "name=slopenv-" --format '{{.Names}}\t{{.Status}}' | grep '^slopenv-')"
   if [ -z "$sessions" ]; then
     echo "No active sessions"
     return
@@ -105,7 +149,7 @@ list_sessions() {
 
 # Pull the agent image, refreshing that agent's stamp on success. Failure is a warning, not a blocker
 pull_image() {
-  if ! docker pull "$1"; then
+  if ! "$runtime" pull "$1"; then
     echo "Warning: could not pull $1, continuing with the local image" >&2
     return 1
   fi
@@ -138,7 +182,7 @@ while getopts "a:xlLhvu" opt; do
       exit 0
       ;;
     L)
-      ensure_docker
+      select_runtime
       list_sessions
       exit 0
       ;;
@@ -179,7 +223,7 @@ if [ "$valid_agent" -ne 1 ]; then
   exit 1
 fi
 
-ensure_docker
+select_runtime
 
 image="ghcr.io/iomonad/slopenv/agent/${agent}:latest"
 
@@ -209,7 +253,7 @@ if [ "$use_persistence" -eq 1 ]; then
   persist_dir="$persist_base/agents/${agent}"
 fi
 
-docker_args=(
+run_args=(
   --rm -it
   --name "$container_name"
   -v "$workdir:$target_dir"
@@ -224,29 +268,38 @@ docker_args=(
 )
 
 if [ -n "$persist_dir" ]; then
-  docker_args+=(-v "$persist_dir:/workspace/.agent-persist")
+  run_args+=(-v "$persist_dir:/workspace/.agent-persist")
+fi
+
+if [ "$runtime" = "podman" ]; then
+  # Rootless podman maps --user to a subuid that cannot write the mounts, keep-id maps it to the host user
+  if [ "$(podman info --format '{{.Host.Security.Rootless}}' 2>/dev/null)" = "true" ]; then
+    run_args+=(--userns=keep-id)
+  fi
+  # Let the mounts through on SELinux hosts without relabeling the project on disk
+  run_args+=(--security-opt label=disable)
 fi
 
 if [ -n "$persist_dir" ]; then
   case "$agent" in
     claude-code)
-      exec docker run "${docker_args[@]}" --entrypoint /bin/sh "$image" -c "mkdir -p /workspace/.agent-persist/claude && rm -rf /workspace/.claude && ln -s /workspace/.agent-persist/claude /workspace/.claude && ln -snf /workspace/.agent-persist/claude.json /workspace/.claude.json && cd $target_dir && exec /sbin/tini -- claude"
+      exec "$runtime" run "${run_args[@]}" --entrypoint /bin/sh "$image" -c "mkdir -p /workspace/.agent-persist/claude && rm -rf /workspace/.claude && ln -s /workspace/.agent-persist/claude /workspace/.claude && ln -snf /workspace/.agent-persist/claude.json /workspace/.claude.json && cd $target_dir && exec /sbin/tini -- claude"
       ;;
     opencode)
-      exec docker run "${docker_args[@]}" --entrypoint /bin/sh "$image" -c "mkdir -p /workspace/.agent-persist && mkdir -p /workspace/.config /workspace/.local/share /workspace/.local/state /workspace/.cache && ln -snf /workspace/.agent-persist /workspace/.config/opencode && ln -snf /workspace/.agent-persist /workspace/.local/share/opencode && ln -snf /workspace/.agent-persist /workspace/.local/state/opencode && exec /sbin/tini -- opencode -c $target_dir"
+      exec "$runtime" run "${run_args[@]}" --entrypoint /bin/sh "$image" -c "mkdir -p /workspace/.agent-persist && mkdir -p /workspace/.config /workspace/.local/share /workspace/.local/state /workspace/.cache && ln -snf /workspace/.agent-persist /workspace/.config/opencode && ln -snf /workspace/.agent-persist /workspace/.local/share/opencode && ln -snf /workspace/.agent-persist /workspace/.local/state/opencode && exec /sbin/tini -- opencode -c $target_dir"
       ;;
     *)
-      exec docker run "${docker_args[@]}" --entrypoint /bin/sh "$image" -c "mkdir -p /workspace/.agent-persist && mkdir -p /workspace/.config && for d in /workspace/.$agent /workspace/.config/$agent; do { [ -d \"\$d\" ] && [ ! -L \"\$d\" ]; } || ln -snf /workspace/.agent-persist \"\$d\"; done && exec /sbin/tini -- $agent $target_dir"
+      exec "$runtime" run "${run_args[@]}" --entrypoint /bin/sh "$image" -c "mkdir -p /workspace/.agent-persist && mkdir -p /workspace/.config && for d in /workspace/.$agent /workspace/.config/$agent; do { [ -d \"\$d\" ] && [ ! -L \"\$d\" ]; } || ln -snf /workspace/.agent-persist \"\$d\"; done && exec /sbin/tini -- $agent $target_dir"
       ;;
   esac
 else
   case "$agent" in
     # claude takes a positional arg as the first prompt, not a directory
     claude-code)
-      exec docker run "${docker_args[@]}" -w "$target_dir" "$image"
+      exec "$runtime" run "${run_args[@]}" -w "$target_dir" "$image"
       ;;
     *)
-      exec docker run "${docker_args[@]}" "$image" $target_dir
+      exec "$runtime" run "${run_args[@]}" "$image" $target_dir
       ;;
   esac
 fi

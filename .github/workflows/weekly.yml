@@ -24,6 +24,8 @@ jobs:
           persist-credentials: false
 
       - name: Build images
+        env:
+          SLOPENV_RUNTIME: docker
         run: ./build.sh
 
       - name: Save images
