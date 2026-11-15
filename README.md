@@ -6,7 +6,7 @@ Personal sandboxed environment for domain-specific tasks
 
 Most existing sandboxing solutions for AI agents are either bloated, overly complex, or closed-source.
 
-`slopenv` takes a minimal, suckless, and non-intrusive approach to safely experimenting with AI agents. By combining a simple shell script with Docker, it provides a lightweight, reproducible workflow that just works out of the box.
+`slopenv` takes a minimal, suckless, and non-intrusive approach to safely experimenting with AI agents. By combining a simple shell script with Podman or Docker, it provides a lightweight, reproducible workflow that just works out of the box.
 
 ## Installation
 
@@ -38,7 +38,18 @@ slopenv [-a agent] [-x] [-l] [-L] [-u] [-v] [directory]
 
 Containers run with all Linux capabilities dropped, `no-new-privileges` set, and a limit of 512 processes. Agents run as an unprivileged user and do not need more.
 
-If the docker daemon is not running, `slopenv` asks whether to start it through `systemctl` (systemd) or `rc-service` (openrc), using `sudo` or `doas` when not root. Answering anything but yes aborts, and so does running without a terminal. Because apparently remembering to start a daemon is now also a task worth automating, but not one worth automating *without asking*.
+When docker is the runtime and its daemon is not running, `slopenv` asks whether to start it through `systemctl` (systemd) or `rc-service` (openrc), using `sudo` or `doas` when not root. Answering anything but yes aborts, and so does running without a terminal. Because apparently remembering to start a daemon is now also a task worth automating, but not one worth automating *without asking*.
+
+### Container runtime
+
+`slopenv` uses podman when it is installed and answers `podman info`, and docker otherwise. A podman that is installed but sulking (a stopped `podman machine`, say) gets a warning and a fallback to docker when there is one. Set `SLOPENV_RUNTIME=podman` or `SLOPENV_RUNTIME=docker` to end the debate yourself.
+
+Under podman, two flags are added to the usual set:
+
+- `--userns=keep-id` when rootless, so the container user is your host user and can actually write to the project it was handed.
+- `--security-opt label=disable`, so SELinux hosts allow the bind mounts without relabeling your project on disk. The container loses SELinux confinement, and keeps everything else listed above.
+
+Podman and docker do not share images. Whatever you built or pulled with one does not exist for the other, a fact both will report with a confident "not found".
 
 ### Image refresh
 
@@ -55,7 +66,7 @@ By default, slopenv persists agent configuration in the current user's home dire
 
 ## Build
 
-You can build all images with the provided script:
+You can build all images with the provided script. It picks podman or docker the same way the launcher does, `SLOPENV_RUNTIME` included, so the images land where `slopenv` will look for them:
 
 ```bash
 ./build.sh
@@ -73,7 +84,7 @@ Every Sunday, `.github/workflows/weekly.yml` rebuilds all the images from scratc
 
 New packages on `ghcr.io` start private. After the first release, set each of `slopenv/core`, `slopenv/agent/opencode` and `slopenv/agent/claude-code` to public in the package settings, or anonymous pulls will fail.
 
-Or build them manually:
+Or build them manually (swap `docker` for `podman` at will, the flags do not care):
 
 ```bash
 # Build core/base image

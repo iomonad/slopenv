@@ -2,10 +2,30 @@
 
 set -eu
 
-if ! command -v docker >/dev/null 2>&1; then
-  echo "Error: docker is not installed or not in PATH" >&2
-  exit 1
-fi
+# Same order as bin/slopenv: podman first, docker otherwise, SLOPENV_RUNTIME to force one
+RUNTIME="${SLOPENV_RUNTIME:-}"
+case "${RUNTIME}" in
+  "")
+    if command -v podman >/dev/null 2>&1; then
+      RUNTIME="podman"
+    elif command -v docker >/dev/null 2>&1; then
+      RUNTIME="docker"
+    else
+      echo "Error: neither podman nor docker is installed or in PATH" >&2
+      exit 1
+    fi
+    ;;
+  podman|docker)
+    if ! command -v "${RUNTIME}" >/dev/null 2>&1; then
+      echo "Error: ${RUNTIME} is not installed or not in PATH" >&2
+      exit 1
+    fi
+    ;;
+  *)
+    echo "Error: unknown SLOPENV_RUNTIME '${RUNTIME}' (podman or docker)" >&2
+    exit 1
+    ;;
+esac
 
 if ! git rev-parse --git-dir >/dev/null 2>&1; then
   echo "Error: not a git repository" >&2
@@ -37,19 +57,20 @@ AGENT_CLAUDE_CODE_VERSION="ghcr.io/iomonad/slopenv/agent/claude-code:${VERSION}"
 AGENT_CLAUDE_CODE_LATEST="ghcr.io/iomonad/slopenv/agent/claude-code:latest"
 
 # Build Core
+echo "Building with ${RUNTIME}"
 echo "Building core: ${CORE_VERSION} and tagging as ${CORE_LATEST}"
-docker build -t "${CORE_VERSION}" base
-docker tag "${CORE_VERSION}" "${CORE_LATEST}"
+"${RUNTIME}" build -t "${CORE_VERSION}" base
+"${RUNTIME}" tag "${CORE_VERSION}" "${CORE_LATEST}"
 
 # Build Opencode Agent
 echo "Building agent/opencode: ${AGENT_OPENCODE_VERSION} and tagging as ${AGENT_OPENCODE_LATEST}"
-docker build --build-arg CORE_IMAGE="${CORE_VERSION}" -t "${AGENT_OPENCODE_VERSION}" agents/opencode
-docker tag "${AGENT_OPENCODE_VERSION}" "${AGENT_OPENCODE_LATEST}"
+"${RUNTIME}" build --build-arg CORE_IMAGE="${CORE_VERSION}" -t "${AGENT_OPENCODE_VERSION}" agents/opencode
+"${RUNTIME}" tag "${AGENT_OPENCODE_VERSION}" "${AGENT_OPENCODE_LATEST}"
 
 # Build Claude Code Agent
 echo "Building agent/claude-code: ${AGENT_CLAUDE_CODE_VERSION} and tagging as ${AGENT_CLAUDE_CODE_LATEST}"
-docker build --build-arg CORE_IMAGE="${CORE_VERSION}" -t "${AGENT_CLAUDE_CODE_VERSION}" agents/claude-code
-docker tag "${AGENT_CLAUDE_CODE_VERSION}" "${AGENT_CLAUDE_CODE_LATEST}"
+"${RUNTIME}" build --build-arg CORE_IMAGE="${CORE_VERSION}" -t "${AGENT_CLAUDE_CODE_VERSION}" agents/claude-code
+"${RUNTIME}" tag "${AGENT_CLAUDE_CODE_VERSION}" "${AGENT_CLAUDE_CODE_LATEST}"
 
 # Launcher with the version baked in, the file a release ships
 mkdir -p dist
